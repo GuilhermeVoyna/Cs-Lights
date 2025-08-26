@@ -1,5 +1,7 @@
 package org.example.utils.json;
 
+import java.util.HashMap;
+
 public class JsonParser {
 
     public static <T> String toJson(T instance){
@@ -8,7 +10,9 @@ public class JsonParser {
     /*
     * Converts a json into an object
     * */
-   // public static <T> T fromJson(String sJson,Class<T> tClass){
-       // JsonObject json = new JsonObject(sJson);}
+   public static <T> T fromJson(String sJson,Class<T> tClass){
+      HashMap<String,JsonObject> json = JsonObject.toObject(sJson);
+      return null;
+   }
 
 }
