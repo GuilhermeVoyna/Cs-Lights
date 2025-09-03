@@ -1,18 +1,21 @@
 package org.example;
 
 
-import org.example.utils.json.JsonObject;
+import org.example.csgsi.GameState;
+import org.example.csgsi.MapState;
+import org.example.utils.json.JsonParser;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 public class Main {
-        public static void main(String[] args) throws IOException {
+        public static void main(String[] args) throws IOException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException {
 
             String sJson = """
 {
-  "A" : {
-    "B"  : 123    ,
-    "C": "Alice",
+  "map" : {
+    "mode"  : 123    ,
+    "test": "Alice",
     "D" : {
       "E" : {
         "F"  :  true
@@ -27,9 +30,12 @@ public class Main {
 }
 
 """;
-
+MapState mapState = new MapState(MapState.GameMode.COMPETITIVE,"dust", MapState.GamePhase.LIVE,1);
+            GameState gameState = new GameState(mapState,null);
+            gameState.setMap(mapState);
             System.out.println(sJson);
-            JsonObject.toObject(sJson);
+            var v = JsonParser.parseJson(sJson,gameState);
         }
 
 }
+
