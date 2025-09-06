@@ -2,7 +2,9 @@ package org.example.utils.json;
 
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Stack;
@@ -33,10 +35,10 @@ public class JsonParser {
             char c = sJson.charAt(i);
 
             if ((c == ' ') && !inQuotes) {
-                if (state.equals(State.READING_VALUE)) {
-                    state = State.WAITING_KEY;
-                }
                 continue;
+            }
+            if (state.equals(State.READING_VALUE) && !isNumber(c) && !inQuotes) {
+                state = State.WAITING_KEY;
             }
 
             if (c == '"') {
@@ -136,7 +138,7 @@ public class JsonParser {
                     }
             }
             if(insertParent){
-            parents.push(jsonObject);
+                parents.push(jsonObject);
             }
             json.get(parent.getPath()).addChild(jsonObject);
             json.put(path, jsonObject);
@@ -169,34 +171,103 @@ public class JsonParser {
             String path = rootPath+"."+fieldName;
             JsonObject jsonObject = jsonMap.get(path);
             if (jsonObject.getChildren().isEmpty()) {
-                //is primitive
                 try {
                     field.set(instance, jsonObject.getValue());
                 } catch (IllegalArgumentException e) {
                     throw new RuntimeException(e);
                 }
             } else {
-                Class<?> childClass = field.getClass();
-                Object childInstance = newInstance(jsonObject, jsonMap, childClass);
+                Class<?> childClass = field.getType();
+                Object oldChildInstance = field.get(instance);
+                Object childInstance = updateOrCreate(jsonObject, jsonMap,oldChildInstance, childClass);
+
                 field.set(instance, childInstance);
+
             }
         }
         return instance;
     }
 
-    private static Object newInstance(JsonObject jsonObject, HashMap<String, JsonObject> jsonMap, Class<?> childClass) {
-        for (var field : childClass.getDeclaredFields()) {
+    private static Object updateOrCreate(JsonObject jsonObject, HashMap<String, JsonObject> jsonMap, Object oldChildInstance, Class<?> childClass) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException {
+        if (oldChildInstance != null){
+            return updateInstance(jsonObject, jsonMap,oldChildInstance );
+        }
+        else {
+            return newInstance(jsonObject, jsonMap, childClass);
+        }
+    }
+    private static Object parseFieldValue(JsonObject jsonObject, HashMap<String, JsonObject> jsonMap, String fieldName, Object currentValue, Class<?> fieldType)
+            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+
+        String key = jsonObject.getPath() + "." + fieldName;
+        JsonObject childJson = jsonMap.get(key);
+        if (childJson == null) return null;
+
+        if (childJson.getChildren().isEmpty()) {
+            if (fieldType.isEnum()) {
+                return parseEnum(fieldType,childJson.getValue());
+            } else {
+                return childJson.getValue();
+            }
+        } else {
+            return updateOrCreate(childJson, jsonMap, currentValue, fieldType);
+        }
+    }
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static Object parseEnum(Class<?> fieldType, Object value) {
+    return Enum.valueOf((Class<Enum>) fieldType.asSubclass(Enum.class), value.toString());
+    }
+
+
+    private static Object updateInstance(JsonObject jsonObject, HashMap<String, JsonObject> jsonMap, Object instance)
+            throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException {
+
+        Class<?> clazz = instance.getClass();
+        Field[] fields = clazz.getDeclaredFields();
+
+        for (Field field : fields) {
             field.setAccessible(true);
             JsonField annotation = field.getAnnotation(JsonField.class);
             String fieldName = (annotation != null) ? annotation.value() : field.getName();
-            if (jsonObject.getChildren().isEmpty()) {
-                //primitive
-            } else {
-                Object childInstance = newInstance(jsonObject, jsonMap, childClass);
-            }
+
+            Class<?> fieldType = field.getType();
+            Object actualObject = field.get(instance);
+
+            Object fieldValue = parseFieldValue(jsonObject, jsonMap, fieldName, actualObject, fieldType);
+            field.set(instance,fieldValue);
         }
-        return null;
+
+        return instance;
     }
+
+
+
+    private static Object newInstance(JsonObject jsonObject, HashMap<String, JsonObject> jsonMap, Class<?> clazz)
+            throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+
+        Field[] fields = clazz.getDeclaredFields();
+        int fieldCount = fields.length;
+        Object[] arguments = new Object[fieldCount];
+        Class<?>[] parameterTypes = new Class<?>[fieldCount];
+
+        for (int i = 0; i < fieldCount; i++) {
+            Field field = fields[i];
+            field.setAccessible(true);
+            JsonField annotation = field.getAnnotation(JsonField.class);
+            String fieldName = (annotation != null) ? annotation.value() : field.getName();
+            Class<?> fieldType = field.getType();
+
+            Object value = parseFieldValue(jsonObject, jsonMap, fieldName, null, fieldType);
+
+            arguments[i] = value;
+            parameterTypes[i] = fieldType;
+        }
+
+        Constructor<?> constructor = clazz.getDeclaredConstructor(parameterTypes);
+        constructor.setAccessible(true);
+        return constructor.newInstance(arguments);
     }
+
+}
 
 

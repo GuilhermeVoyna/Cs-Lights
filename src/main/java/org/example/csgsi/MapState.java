@@ -1,21 +1,28 @@
 package org.example.csgsi;
 
+import org.example.utils.json.JsonField;
+
 public class MapState {
-
+    @JsonField("mode")
     private         GameMode    gameMode;
+    @JsonField("name")
     private         String      mapName;
+    @JsonField("phase")
     private         GamePhase   gamePhase;
+    @JsonField("round")
     private         Number      round;
-    private final   TeamState   team_ct;
-    private final   TeamState   team_t;
+    @JsonField("team_ct")
+    private    TeamState   team_ct;
+    @JsonField("team_t")
+    private    TeamState   team_t;
 
-    public MapState(GameMode gameMode, String mapName, GamePhase gamePhase,Number timeouts) {
-        this.gameMode   = gameMode;
-        this.mapName    = mapName;
-        this.gamePhase  = gamePhase;
-        this.round      = 0;
-        this.team_ct    = new TeamState(0, 0, timeouts);
-        this.team_t     = new TeamState(0, 0, timeouts);
+    public MapState(GameMode gameMode, String mapName, GamePhase gamePhase, Number round, TeamState team_ct, TeamState team_t) {
+        this.gameMode = gameMode;
+        this.mapName = mapName;
+        this.gamePhase = gamePhase;
+        this.round = round;
+        this.team_ct = team_ct;
+        this.team_t = team_t;
     }
 
     public enum GameMode{
@@ -24,7 +31,13 @@ public class MapState {
         DEATHMATCH("deathmatch"),
         WAR_GAMES("skirmish"),
         DANGER_ZONE("survival"),
-        WINGMAN_2V2("scrimcomp2v2");
+        WINGMAN_2V2("scrimcomp2v2"),
+        competitive("json"),
+        casual("json"),
+        deathmatch("json"),
+        skirmish("json"),
+        survival("json"),
+        scrimcomp2v2("json");
 
         private final String value;
         GameMode(String value) {
@@ -44,7 +57,15 @@ public class MapState {
         ,DEFUSE("defuse")
         ,OVER("over")
         ,INTERMISSION("intermission")
-        ,GAME_OVER("gameover");
+        ,GAME_OVER("gameover"),
+        warmup("json"),
+        freezetime("json"),
+        live("json"),
+        bomb("json"),
+        defuse("json"),
+        over("json"),
+        intermission("json"),
+        gameover("json");
 
         private final  String value;
         GamePhase(String value){
