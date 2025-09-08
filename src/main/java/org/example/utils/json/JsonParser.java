@@ -4,9 +4,9 @@ package org.example.utils.json;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
-
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Stack;
 
 
 public class JsonParser {
@@ -64,7 +64,7 @@ public class JsonParser {
             if (state.equals(State.READING_VALUE)) {
                 if (!inQuotes && (c == '\n') || !inQuotes && (c == '"')) {
                     state = State.WAITING_KEY;
-                } else if (c != '"') {
+                }else{
                     value.append(c);
                 }
 
@@ -111,10 +111,17 @@ public class JsonParser {
     }
     private static void insertJsonObject(StringBuilder key, StringBuilder value, HashMap<String, JsonObject> json, Stack<JsonObject> parents,boolean insertParent) {
         if (!key.isEmpty() || !value.isEmpty()) {
+
             JsonObject parent = parents.peek();
             JsonObject jsonObject;
             String sKey = key.toString();
             String path = json.get(parent.getPath()).getPath() + '.' + sKey;
+            Boolean isString = false;
+            if (!value.isEmpty() && value.charAt(0) == '"') {
+                isString = true;
+                value.deleteCharAt(0);
+            }
+
             switch (value.toString()) {
                 case "null":
                     jsonObject = new JsonObject(sKey, path, null, parent);
@@ -127,15 +134,20 @@ public class JsonParser {
                     break;
 
                 default:
-                    try {
-                        jsonObject = new JsonObject(sKey, path, Integer.parseInt(value.toString()), parent);
-                    } catch (NumberFormatException e1) {
-                        try {
-                            jsonObject = new JsonObject(sKey, path, Double.parseDouble(value.toString()), parent);
-                        } catch (NumberFormatException e2) {
+                        if(isString){
                             jsonObject = new JsonObject(sKey, path, value.toString(), parent);
                         }
-                    }
+                        else {
+                            try {
+                                jsonObject = new JsonObject(sKey, path, Integer.parseInt(value.toString()), parent);
+                            } catch (NumberFormatException e1) {
+                                try {
+                                    jsonObject = new JsonObject(sKey, path, Double.parseDouble(value.toString()), parent);
+                                } catch (NumberFormatException e2) {
+                                    jsonObject = new JsonObject(sKey, path, value.toString(), parent);
+                                }
+                            }
+                        }
             }
             if(insertParent){
                 parents.push(jsonObject);
@@ -194,7 +206,7 @@ public class JsonParser {
 
         if (childJson.getChildren().isEmpty()) {
             if (fieldType.isEnum()) {
-                return parseEnum(fieldType,childJson.getValue());
+                return parseEnum(fieldName,fieldType,childJson.getValue());
             } else {
                 return childJson.getValue();
             }
@@ -203,9 +215,26 @@ public class JsonParser {
         }
     }
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static Object parseEnum(Class<?> fieldType, Object value) {
-    return Enum.valueOf((Class<Enum>) fieldType.asSubclass(Enum.class), value.toString());
+    private static Object parseEnum(String fieldName, Class<?> fieldType, Object value) {
+        String jsonValue = value.toString();
+
+        Class<? extends Enum<?>> enumClass = (Class<? extends Enum<?>>) fieldType.asSubclass(Enum.class);
+
+        for (Enum<?> constant : enumClass.getEnumConstants()) {
+            try {
+                Field enumField = enumClass.getField(constant.name());
+                JsonField annotation = enumField.getAnnotation(JsonField.class);
+                if (annotation != null && annotation.value().equals(jsonValue)) {
+                    return constant;
+                }
+            } catch (NoSuchFieldException e) {
+                //
+            }
+        }
+
+        return Enum.valueOf((Class<Enum>) fieldType.asSubclass(Enum.class), value.toString());
     }
+
 
 
     private static Object updateInstance(JsonObject jsonObject, HashMap<String, JsonObject> jsonMap, Object instance)

@@ -91,7 +91,7 @@ public class Main {
 
 """;
 MapState mapState = new MapState(MapState.GameMode.COMPETITIVE,"dust", MapState.GamePhase.LIVE,1,null,null);
-            GameState gameState = new GameState(null);
+            GameState gameState = new GameState(null,null);
             gameState.setMap(mapState);
             System.out.println(sJson);
             var v = JsonParser.parseJson(sJson,gameState);

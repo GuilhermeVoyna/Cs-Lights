@@ -4,14 +4,16 @@ import org.example.utils.json.JsonField;
 public class GameState {
     @JsonField("map")
     private MapState        MapState;
-    private PlayerSate     player;
+    @JsonField("player")
+    private PlayerSate      player;
     //private ProviderState   provider;
     //private RoundState      round;
     //private AuthState       auth;
 
 
-    public GameState(MapState mapState) {
+    public GameState(MapState mapState, PlayerSate player) {
         MapState = mapState;
+        this.player = player;
     }
 
     public MapState getMap() {
