@@ -26,27 +26,18 @@ public class MapState {
     }
 
     public enum GameMode{
-        COMPETITIVE("competitive"),
-        CASUAL("casual"),
-        DEATHMATCH("deathmatch"),
-        WAR_GAMES("skirmish"),
-        DANGER_ZONE("survival"),
-        WINGMAN_2V2("scrimcomp2v2"),
-        competitive("json"),
-        casual("json"),
-        deathmatch("json"),
-        skirmish("json"),
-        survival("json"),
-        scrimcomp2v2("json");
-
-        private final String value;
-        GameMode(String value) {
-            this.value = value;
-        }
-        @Override
-        public String toString(){
-            return value;
-        }
+        @JsonField("competitive")
+        COMPETITIVE,
+        @JsonField("casual")
+        CASUAL,
+        @JsonField("deathmatch")
+        DEATHMATCH,
+        @JsonField("skirmish")
+        WAR_GAMES,
+        @JsonField("survival")
+        DANGER_ZONE,
+        @JsonField("scrimcomp2v2")
+        WINGMAN_2V2;
     }
 
     public enum GamePhase{

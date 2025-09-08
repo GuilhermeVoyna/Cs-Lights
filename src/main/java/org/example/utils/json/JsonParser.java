@@ -4,10 +4,10 @@ package org.example.utils.json;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Stack;
+import java.lang.reflect.Method;
+import java.util.*;
+
+
 
 public class JsonParser {
 
@@ -161,29 +161,16 @@ public class JsonParser {
     public static <T> T parseJson(String sJson, T instance) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
         HashMap<String, JsonObject> jsonMap = jsonMap(sJson);
         Class<?> clazz = instance.getClass();
-        String rootPath = jsonMap.get("root").getPath();
-        Constructor<?>[] constructors = clazz.getConstructors();
+        JsonObject root = jsonMap.get("root");
 
         for (var field : clazz.getDeclaredFields()) {
             field.setAccessible(true);
             JsonField annotation = field.getAnnotation(JsonField.class);
             String fieldName = (annotation != null) ? annotation.value() : field.getName();
-            String path = rootPath+"."+fieldName;
-            JsonObject jsonObject = jsonMap.get(path);
-            if (jsonObject.getChildren().isEmpty()) {
-                try {
-                    field.set(instance, jsonObject.getValue());
-                } catch (IllegalArgumentException e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                Class<?> childClass = field.getType();
-                Object oldChildInstance = field.get(instance);
-                Object childInstance = updateOrCreate(jsonObject, jsonMap,oldChildInstance, childClass);
-
-                field.set(instance, childInstance);
-
-            }
+            Class<?> fieldType = field.getType();
+            Object actualObject = field.get(instance);
+            Object fieldValue = parseFieldValue(root, jsonMap, fieldName, actualObject, fieldType);
+            setField(field,fieldValue,instance);
         }
         return instance;
     }
@@ -196,12 +183,14 @@ public class JsonParser {
             return newInstance(jsonObject, jsonMap, childClass);
         }
     }
-    private static Object parseFieldValue(JsonObject jsonObject, HashMap<String, JsonObject> jsonMap, String fieldName, Object currentValue, Class<?> fieldType)
+    private static Object parseFieldValue(JsonObject parent, HashMap<String, JsonObject> jsonMap, String fieldName, Object currentValue, Class<?> fieldType)
             throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
 
-        String key = jsonObject.getPath() + "." + fieldName;
+        String key = parent.getPath() + "." + fieldName;
         JsonObject childJson = jsonMap.get(key);
-        if (childJson == null) return null;
+        if (childJson == null) {
+            return null;
+        }
 
         if (childJson.getChildren().isEmpty()) {
             if (fieldType.isEnum()) {
@@ -234,13 +223,15 @@ public class JsonParser {
             Object actualObject = field.get(instance);
 
             Object fieldValue = parseFieldValue(jsonObject, jsonMap, fieldName, actualObject, fieldType);
-            field.set(instance,fieldValue);
+            setField(field,fieldValue,instance);
         }
 
         return instance;
     }
-
-
+    private static void setField(Field field, Object fieldValue, Object instance) throws IllegalAccessException {
+                field.setAccessible(true);
+                field.set(instance, fieldValue);
+    }
 
     private static Object newInstance(JsonObject jsonObject, HashMap<String, JsonObject> jsonMap, Class<?> clazz)
             throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
@@ -256,11 +247,8 @@ public class JsonParser {
             JsonField annotation = field.getAnnotation(JsonField.class);
             String fieldName = (annotation != null) ? annotation.value() : field.getName();
             Class<?> fieldType = field.getType();
-
-            Object value = parseFieldValue(jsonObject, jsonMap, fieldName, null, fieldType);
-
-            arguments[i] = value;
-            parameterTypes[i] = fieldType;
+            arguments[i]        =  parseFieldValue(jsonObject, jsonMap, fieldName, null, fieldType);
+            parameterTypes[i]   = fieldType;
         }
 
         Constructor<?> constructor = clazz.getDeclaredConstructor(parameterTypes);
