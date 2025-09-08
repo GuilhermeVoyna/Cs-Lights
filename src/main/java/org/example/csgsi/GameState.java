@@ -4,7 +4,7 @@ import org.example.utils.json.JsonField;
 public class GameState {
     @JsonField("map")
     private MapState        MapState;
-    //private PlayerState     player;
+    private PlayerSate     player;
     //private ProviderState   provider;
     //private RoundState      round;
     //private AuthState       auth;

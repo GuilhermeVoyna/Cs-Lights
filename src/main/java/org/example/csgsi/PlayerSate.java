@@ -6,27 +6,22 @@ public class PlayerSate {
     private PlayerActivity  activity;
     private MatchStats      matchStats;
 
+
+
     public  enum    PlayerTeam{
          T
         ,CT;
     }
     public enum PlayerActivity {
-
+        PLAYING
+        ,MENU
+        ,TEXTINPUT
     }
 
-    public  class    MatchStats{
-        public Number kills;
-        public Number assists;
-        public Number deaths;
-        public Number mvps;
-        public Number score;
-
-        public MatchStats(Number kills, Number assists, Number deaths, Number mvps, Number score) {
-            this.kills = kills;
-            this.assists = assists;
-            this.deaths = deaths;
-            this.mvps = mvps;
-            this.score = score;
-        }
+    public PlayerSate(String steamid, PlayerTeam team, PlayerActivity activity, MatchStats matchStats) {
+        this.steamid = steamid;
+        this.team = team;
+        this.activity = activity;
+        this.matchStats = matchStats;
     }
 }

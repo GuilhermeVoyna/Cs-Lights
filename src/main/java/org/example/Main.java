@@ -10,7 +10,6 @@ import java.lang.reflect.InvocationTargetException;
 
 public class Main {
         public static void main(String[] args) throws IOException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException {
-
             String sJson = """
 {
   "map": {
@@ -96,9 +95,10 @@ MapState mapState = new MapState(MapState.GameMode.COMPETITIVE,"dust", MapState.
             gameState.setMap(mapState);
             System.out.println(sJson);
             var v = JsonParser.parseJson(sJson,gameState);
+
             long start = System.nanoTime(); // ou System.currentTimeMillis()
-            for (int i = 0 ;i<20_000;i++) {
-                JsonParser.parseJson(sJson, gameState);
+            for (int i = 0 ;i<2;i++) {
+              var v2 =  JsonParser.parseJson(sJson, gameState);
             }
             long end = System.nanoTime(); // ou System.currentTimeMillis()
 
