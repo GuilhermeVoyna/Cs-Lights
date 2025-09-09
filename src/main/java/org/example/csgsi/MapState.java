@@ -41,31 +41,23 @@ public class MapState {
     }
 
     public enum GamePhase{
-        WARMUP("warmup")
-        ,FREEZE_TIME("freezetime")
-        ,LIVE("live")
-        ,BOMB("bomb")
-        ,DEFUSE("defuse")
-        ,OVER("over")
-        ,INTERMISSION("intermission")
-        ,GAME_OVER("gameover"),
-        warmup("json"),
-        freezetime("json"),
-        live("json"),
-        bomb("json"),
-        defuse("json"),
-        over("json"),
-        intermission("json"),
-        gameover("json");
+        @JsonField("warmup")
+        WARMUP,
+        @JsonField("freezetime")
+        FREEZE_TIME,
+        @JsonField("live")
+        LIVE,
+        @JsonField("bom")
+        BOMB,
+        @JsonField("defuse")
+        DEFUSE,
+        @JsonField("over")
+        OVER,
+        @JsonField("intermission")
+        INTERMISSION,
+        @JsonField("gameover")
+        GAME_OVER,
 
-        private final  String value;
-        GamePhase(String value){
-            this.value = value;
-            }
-        @Override
-        public String toString(){
-            return value;
-            }
     }
 
     public GameMode getGameMode() {

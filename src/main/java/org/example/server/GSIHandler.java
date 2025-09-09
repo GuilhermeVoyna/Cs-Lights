@@ -39,7 +39,7 @@ public class GSIHandler  implements HttpHandler {
             break;
 
             case "GET":
-                String gameMode = applicationContext.getGameState().getMap().getGameMode().toString();
+                String gameMode = applicationContext.getGameState().getMapState().getGameMode().toString();
                 response = String.format("<html><body>Server is running...  %s </body></html>", gameMode);
                 exchange.sendResponseHeaders(200, response.length());
                 try (OutputStream os = exchange.getResponseBody()) {
