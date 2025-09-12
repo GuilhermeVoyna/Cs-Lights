@@ -12,9 +12,9 @@ public class MapState {
     @JsonField("round")
     private         Number      round;
     @JsonField("team_ct")
-    private    TeamState   team_ct;
+    private         TeamState   team_ct;
     @JsonField("team_t")
-    private    TeamState   team_t;
+    private         TeamState   team_t;
 
     public MapState(GameMode gameMode, String mapName, GamePhase gamePhase, Number round, TeamState team_ct, TeamState team_t) {
         this.gameMode = gameMode;

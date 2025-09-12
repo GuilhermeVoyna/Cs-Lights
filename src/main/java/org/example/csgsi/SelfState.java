@@ -4,27 +4,27 @@ import org.example.utils.json.JsonField;
 
 public class SelfState {
     @JsonField("health")
-    private int health;
+    private Integer health;
     @JsonField("armor")
-    private int armor;
+    private Integer armor;
     @JsonField("helmet")
-    private boolean helmet;
+    private Boolean helmet;
     @JsonField("flashed")
-    private int flashed;
+    private Integer flashed;
     @JsonField("smoked")
-    private int smoked;
+    private Integer smoked;
     @JsonField("burning")
-    private int burning;
+    private Integer burning;
     @JsonField("money")
-    private int money;
+    private Integer money;
     @JsonField("round_kills")
-    private int roundKills;
+    private Integer roundKills;
     @JsonField("round_killhs")
-    private int roundHs;
+    private Integer roundHs;
     @JsonField("equip_value")
-    private int equipValue;
+    private Integer equipValue;
 
-    public SelfState(int health, int armor, boolean helmet, int flashed, int smoked, int burning, int money, int roundKills, int roundHs, int equipValue) {
+    public SelfState(Integer health, Integer armor, Boolean helmet, Integer flashed, Integer smoked, Integer burning, Integer money, Integer roundKills, Integer roundHs, Integer equipValue) {
         this.health = health;
         this.armor = armor;
         this.helmet = helmet;
@@ -37,19 +37,19 @@ public class SelfState {
         this.equipValue = equipValue;
     }
 
-    public int getHealth() {
+    public Integer getHealth() {
         return health;
     }
 
-    public void setHealth(int health) {
+    public void setHealth(Integer health) {
         this.health = health;
     }
 
-    public int getArmor() {
+    public Integer getArmor() {
         return armor;
     }
 
-    public void setArmor(int armor) {
+    public void setArmor(Integer armor) {
         this.armor = armor;
     }
 
@@ -61,59 +61,59 @@ public class SelfState {
         this.helmet = helmet;
     }
 
-    public int getFlashed() {
+    public Integer getFlashed() {
         return flashed;
     }
 
-    public void setFlashed(int flashed) {
+    public void setFlashed(Integer flashed) {
         this.flashed = flashed;
     }
 
-    public int getSmoked() {
+    public Integer getSmoked() {
         return smoked;
     }
 
-    public void setSmoked(int smoked) {
+    public void setSmoked(Integer smoked) {
         this.smoked = smoked;
     }
 
-    public int getBurning() {
+    public Integer getBurning() {
         return burning;
     }
 
-    public void setBurning(int burning) {
+    public void setBurning(Integer burning) {
         this.burning = burning;
     }
 
-    public int getMoney() {
+    public Integer getMoney() {
         return money;
     }
 
-    public void setMoney(int money) {
+    public void setMoney(Integer money) {
         this.money = money;
     }
 
-    public int getRoundKills() {
+    public Integer getRoundKills() {
         return roundKills;
     }
 
-    public void setRoundKills(int roundKills) {
+    public void setRoundKills(Integer roundKills) {
         this.roundKills = roundKills;
     }
 
-    public int getRoundHs() {
+    public Integer getRoundHs() {
         return roundHs;
     }
 
-    public void setRoundHs(int roundHs) {
+    public void setRoundHs(Integer roundHs) {
         this.roundHs = roundHs;
     }
 
-    public int getEquipValue() {
+    public Integer getEquipValue() {
         return equipValue;
     }
 
-    public void setEquipValue(int equipValue) {
+    public void setEquipValue(Integer equipValue) {
         this.equipValue = equipValue;
     }
 }

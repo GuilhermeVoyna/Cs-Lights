@@ -1,21 +1,25 @@
 package org.example.utils.json;
 
 
+import org.example.csgsi.SelfState;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Optional;
 import java.util.Stack;
 
 
-public class JsonParser {
+public  class JsonParser {
 
     enum State {
         READING_KEY, READING_VALUE, WAITING_KEY, WAITING_VALUE
     }
 
-    private static LinkedHashMap<String, JsonObject> jsonMap(String sJson) {
+    public static LinkedHashMap<String, JsonObject> getFields(String sJson) {
 
         boolean inQuotes = false;
         StringBuilder key = new StringBuilder();
@@ -37,7 +41,8 @@ public class JsonParser {
             if ((c == ' ') && !inQuotes) {
                 continue;
             }
-            if (state.equals(State.READING_VALUE) && !isNumber(c) && !inQuotes) {
+
+            if (state.equals(State.READING_VALUE) && (c == ',' || c == '}' || c=='{' || c=='\n' || c=='\r') && !inQuotes) {
                 state = State.WAITING_KEY;
             }
 
@@ -116,11 +121,6 @@ public class JsonParser {
             JsonObject jsonObject;
             String sKey = key.toString();
             String path = json.get(parent.getPath()).getPath() + '.' + sKey;
-            Boolean isString = false;
-            if (!value.isEmpty() && value.charAt(0) == '"') {
-                isString = true;
-                value.deleteCharAt(0);
-            }
 
             switch (value.toString()) {
                 case "null":
@@ -134,7 +134,8 @@ public class JsonParser {
                     break;
 
                 default:
-                        if(isString){
+                        if(!value.isEmpty() && value.charAt(0) == '"'){
+                            value.deleteCharAt(0);
                             jsonObject = new JsonObject(sKey, path, value.toString(), parent);
                         }
                         else {
@@ -170,8 +171,7 @@ public class JsonParser {
         return (c >= '0' && c <= '9');
     }
 
-    public static <T> T parseJson(String sJson, T instance) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
-        HashMap<String, JsonObject> jsonMap = jsonMap(sJson);
+    public static <T> T parseJson(HashMap<String, JsonObject> jsonMap, T instance) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
         Class<?> clazz = instance.getClass();
         JsonObject root = jsonMap.get("root");
 
@@ -180,9 +180,9 @@ public class JsonParser {
             JsonField annotation = field.getAnnotation(JsonField.class);
             String fieldName = (annotation != null) ? annotation.value() : field.getName();
             Class<?> fieldType = field.getType();
-            Object actualObject = field.get(instance);
-            Object fieldValue = parseFieldValue(root, jsonMap, fieldName, actualObject, fieldType);
-            setField(field,fieldValue,instance);
+            Object oldObject = field.get(instance);
+            Object fieldValue = parseFieldValue(root, jsonMap, fieldName, oldObject, fieldType);
+            setField(root,field,fieldValue,instance);
         }
         return instance;
     }
@@ -195,13 +195,13 @@ public class JsonParser {
             return newInstance(jsonObject, jsonMap, childClass);
         }
     }
-    private static Object parseFieldValue(JsonObject parent, HashMap<String, JsonObject> jsonMap, String fieldName, Object currentValue, Class<?> fieldType)
+    private static Object parseFieldValue(JsonObject parent, HashMap<String, JsonObject> jsonMap, String fieldName, Object oldObject, Class<?> fieldType)
             throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
 
         String key = parent.getPath() + "." + fieldName;
         JsonObject childJson = jsonMap.get(key);
         if (childJson == null) {
-            return null;
+            return oldObject;
         }
 
         if (childJson.getChildren().isEmpty()) {
@@ -211,7 +211,7 @@ public class JsonParser {
                 return childJson.getValue();
             }
         } else {
-            return updateOrCreate(childJson, jsonMap, currentValue, fieldType);
+            return updateOrCreate(childJson, jsonMap, oldObject, fieldType);
         }
     }
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -243,23 +243,52 @@ public class JsonParser {
         Class<?> clazz = instance.getClass();
         Field[] fields = clazz.getDeclaredFields();
 
+
         for (Field field : fields) {
             field.setAccessible(true);
             JsonField annotation = field.getAnnotation(JsonField.class);
             String fieldName = (annotation != null) ? annotation.value() : field.getName();
-
             Class<?> fieldType = field.getType();
             Object actualObject = field.get(instance);
-
             Object fieldValue = parseFieldValue(jsonObject, jsonMap, fieldName, actualObject, fieldType);
-            setField(field,fieldValue,instance);
+            setField(jsonObject,field,fieldValue,instance);
         }
 
         return instance;
     }
-    private static void setField(Field field, Object fieldValue, Object instance) throws IllegalAccessException {
+    public static HashMap<String, Optional<Method>> methods = new HashMap<>();
+
+    private static void setField(JsonObject jsonObject, Field field, Object fieldValue, Object instance) throws IllegalAccessException {
+        String methodName = "set" + capitalizeString(field.getName());
+        String key = jsonObject.getPath() + "." + methodName;
+        Class<?> clazz = instance.getClass();
+        Optional<Method> cachedMethod = methods.get(key);
+        if (cachedMethod == null) {
+            try {
+                Method method = clazz.getMethod(methodName, field.getType());
+                methods.put(key, Optional.of(method));
+                method.invoke(instance, fieldValue);
+            } catch (NoSuchMethodException e) {
                 field.setAccessible(true);
                 field.set(instance, fieldValue);
+                methods.put(key, Optional.empty());
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        } else if (cachedMethod.isEmpty()) {
+            field.setAccessible(true);
+            field.set(instance, fieldValue);
+        } else {
+            try {
+                cachedMethod.get().invoke(instance, fieldValue);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private static String capitalizeString(String str) {
+        return  str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
     private static Object newInstance(JsonObject jsonObject, HashMap<String, JsonObject> jsonMap, Class<?> clazz)

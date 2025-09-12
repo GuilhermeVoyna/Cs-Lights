@@ -2,7 +2,10 @@ package org.example.server;
 
 import com.sun.net.httpserver.HttpServer;
 import org.example.context.ApplicationContext;
+import org.example.csgsi.GameState;
+import org.example.utils.json.JsonParser;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Logger;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -20,5 +23,6 @@ public class GSIServer {
         server.start();
         String info = format("Server started at port {0}", Integer.toString(server.getAddress().getPort()) );
         LOGGER.info(info);
+
     }
 }

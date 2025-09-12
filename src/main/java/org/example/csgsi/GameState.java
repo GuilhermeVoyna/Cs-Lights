@@ -5,32 +5,20 @@ public class GameState {
     @JsonField("map")
     private MapState        mapState;
     @JsonField("player")
-    private PlayerSate      player;
-    @JsonField("state")
-    private SelfState       self;
+    private PlayerState     playerState;
     @JsonField("provider")
-    private ProviderState   provider;
+    private ProviderState   providerState;
     @JsonField("round")
-    private RoundState      round;
+    private RoundState      roundState;
     @JsonField("auth")
-    private AuthState       auth;
+    private AuthState       authState;
 
-    public GameState() {
-        this.mapState   = null;
-        this.player     = null;
-        this.self       = null;
-        this.provider   = null;
-        this.round      = null;
-        this.auth       = null;
-    }
-
-    public GameState(MapState mapState, PlayerSate player, SelfState self, ProviderState provider, RoundState round, AuthState auth) {
+    public GameState(MapState mapState, PlayerState playerState, ProviderState providerState, RoundState roundState, AuthState authState) {
         this.mapState = mapState;
-        this.player = player;
-        this.self = self;
-        this.provider = provider;
-        this.round = round;
-        this.auth = auth;
+        this.playerState = playerState;
+        this.providerState = providerState;
+        this.roundState = roundState;
+        this.authState = authState;
     }
 
     public MapState getMapState() {
@@ -41,43 +29,36 @@ public class GameState {
         this.mapState = mapState;
     }
 
-    public PlayerSate getPlayer() {
-        return player;
+    public PlayerState getPlayerSate() {
+        return playerState;
     }
 
-    public void setPlayer(PlayerSate player) {
-        this.player = player;
+    public void setPlayerSate(PlayerState playerState) {
+        this.playerState = playerState;
     }
 
-    public SelfState getSelf() {
-        return self;
+
+    public ProviderState getProviderState() {
+        return providerState;
     }
 
-    public void setSelf(SelfState self) {
-        this.self = self;
+    public void setProviderState(ProviderState providerState) {
+        this.providerState = providerState;
     }
 
-    public ProviderState getProvider() {
-        return provider;
+    public RoundState getRoundState() {
+        return roundState;
     }
 
-    public void setProvider(ProviderState provider) {
-        this.provider = provider;
+    public void setRoundState(RoundState roundState) {
+        this.roundState = roundState;
     }
 
-    public RoundState getRound() {
-        return round;
+    public AuthState getAuthState() {
+        return authState;
     }
 
-    public void setRound(RoundState round) {
-        this.round = round;
-    }
-
-    public AuthState getAuth() {
-        return auth;
-    }
-
-    public void setAuth(AuthState auth) {
-        this.auth = auth;
+    public void setAuthState(AuthState authState) {
+        this.authState = authState;
     }
 }

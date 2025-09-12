@@ -6,13 +6,13 @@ public class ProviderState {
     @JsonField("name")
     private String name;
     @JsonField("appid")
-    private int appId;
+    private Integer appId;
     @JsonField("steamid")
     private String steamId;
     @JsonField("timestamp")
     private Integer timestamp;
 
-    public ProviderState(String name, int appId, String steamId, Integer timestamp) {
+    public ProviderState(String name, Integer appId, String steamId, Integer timestamp) {
         this.name = name;
         this.appId = appId;
         this.steamId = steamId;
@@ -27,11 +27,11 @@ public class ProviderState {
         this.name = name;
     }
 
-    public int getAppId() {
+    public Integer getAppId() {
         return appId;
     }
 
-    public void setAppId(int appId) {
+    public void setAppId(Integer appId) {
         this.appId = appId;
     }
 

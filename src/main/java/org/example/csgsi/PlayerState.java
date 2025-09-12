@@ -2,36 +2,31 @@ package org.example.csgsi;
 
 import org.example.utils.json.JsonField;
 
-public class PlayerSate {
+public class PlayerState {
     @JsonField("steamid")
     private String          steamId;
     @JsonField("name")
     private String          name;
     @JsonField("observer_slot")
-    private int             observer_slot;
+    private Integer             observer_slot;
     @JsonField("team")
     private PlayerTeam      team;
     @JsonField("activity")
     private PlayerActivity  activity;
     @JsonField("match_stats")
     private MatchStats      matchStats;
+    @JsonField("state")
+    private SelfState       selfState;
 
 
-    public PlayerSate(String steamId, String name, int observer_slot, PlayerTeam team, PlayerActivity activity, MatchStats matchStats) {
+    public PlayerState(String steamId, String name, Integer observer_slot, PlayerTeam team, PlayerActivity activity, MatchStats matchStats, SelfState selfState) {
         this.steamId = steamId;
         this.name = name;
         this.observer_slot = observer_slot;
         this.team = team;
         this.activity = activity;
         this.matchStats = matchStats;
-    }
-    public PlayerSate(Double steamId, String name, int observer_slot, PlayerTeam team, PlayerActivity activity, MatchStats matchStats) {
-        this.steamId = steamId.toString();
-        this.name = name;
-        this.observer_slot = observer_slot;
-        this.team = team;
-        this.activity = activity;
-        this.matchStats = matchStats;
+        this.selfState  = selfState;
     }
 
     public  enum    PlayerTeam{
@@ -47,6 +42,14 @@ public class PlayerSate {
         MENU,
         @JsonField("textinput")
         PROMPT
+    }
+
+    public SelfState getSelfState() {
+        return selfState;
+    }
+
+    public void setSelfState(SelfState selfState) {
+        this.selfState = selfState;
     }
 
     public String getSteamId() {
@@ -65,11 +68,11 @@ public class PlayerSate {
         this.name = name;
     }
 
-    public int getObserver_slot() {
+    public Integer getObserver_slot() {
         return observer_slot;
     }
 
-    public void setObserver_slot(int observer_slot) {
+    public void setObserver_slot(Integer observer_slot) {
         this.observer_slot = observer_slot;
     }
 

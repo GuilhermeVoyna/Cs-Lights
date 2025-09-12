@@ -12,6 +12,14 @@ public class TeamState {
     @JsonField("matches_won_this_series")
     private Number  matches_won;
 
+    public Number getMatches_won() {
+        return matches_won;
+    }
+
+    public void setMatches_won(Number matches_won) {
+        this.matches_won = matches_won;
+    }
+
     public TeamState(Number score, Number consecutive_losses, Number timeouts, Number matches_won) {
         this.score = score;
         this.consecutive_losses = consecutive_losses;
